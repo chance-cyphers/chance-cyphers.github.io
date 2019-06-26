@@ -4508,15 +4508,21 @@ var author$project$Main$LinkClicked = function (a) {
 var author$project$Main$UrlChanged = function (a) {
 	return {$: 'UrlChanged', a: a};
 };
-var author$project$Main$Model = F4(
-	function (route, pageModel, greeting, key) {
-		return {greeting: greeting, key: key, pageModel: pageModel, route: route};
+var author$project$Main$Model = F3(
+	function (route, pageModel, key) {
+		return {key: key, pageModel: pageModel, route: route};
 	});
 var author$project$Main$BracketModel = function (a) {
 	return {$: 'BracketModel', a: a};
 };
 var author$project$Main$BracketMsg = function (a) {
 	return {$: 'BracketMsg', a: a};
+};
+var author$project$Main$CreateTourneyModel = function (a) {
+	return {$: 'CreateTourneyModel', a: a};
+};
+var author$project$Main$CreateTourneyMsg = function (a) {
+	return {$: 'CreateTourneyMsg', a: a};
 };
 var author$project$Main$HomeModel = {$: 'HomeModel'};
 var author$project$Page$Bracket$GotBracket = function (a) {
@@ -5943,9 +5949,13 @@ var author$project$Page$Bracket$init = function (_n0) {
 				url: 'https://tourney-service.herokuapp.com/tourney/bracket/example'
 			}));
 };
-var elm$core$Platform$Cmd$map = _Platform_map;
+var author$project$Page$CreateTourney$NotEvenHappenedYetAtAll = {$: 'NotEvenHappenedYetAtAll'};
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var author$project$Page$CreateTourney$init = _Utils_Tuple2(
+	{characters: elm$core$Dict$empty, matchDuration: 0, requestStatus: author$project$Page$CreateTourney$NotEvenHappenedYetAtAll, title: ''},
+	elm$core$Platform$Cmd$none);
+var elm$core$Platform$Cmd$map = _Platform_map;
 var author$project$Main$initPageModel = function (route) {
 	switch (route.$) {
 		case 'Home':
@@ -5957,12 +5967,20 @@ var author$project$Main$initPageModel = function (route) {
 			return _Utils_Tuple2(
 				author$project$Main$BracketModel(bracketModel),
 				A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, bracketCmd));
+		case 'CreateTourney':
+			var _n2 = author$project$Page$CreateTourney$init;
+			var createModel = _n2.a;
+			var createCmd = _n2.b;
+			return _Utils_Tuple2(
+				author$project$Main$CreateTourneyModel(createModel),
+				A2(elm$core$Platform$Cmd$map, author$project$Main$CreateTourneyMsg, createCmd));
 		default:
 			return _Utils_Tuple2(author$project$Main$HomeModel, elm$core$Platform$Cmd$none);
 	}
 };
 var author$project$Route$NotFound = {$: 'NotFound'};
 var author$project$Route$Bracket = {$: 'Bracket'};
+var author$project$Route$CreateTourney = {$: 'CreateTourney'};
 var author$project$Route$Home = {$: 'Home'};
 var elm$core$List$map = F2(
 	function (f, xs) {
@@ -6083,7 +6101,11 @@ var author$project$Route$parser = elm$url$Url$Parser$oneOf(
 			A2(
 			elm$url$Url$Parser$map,
 			author$project$Route$Bracket,
-			elm$url$Url$Parser$s('bracket'))
+			elm$url$Url$Parser$s('bracket')),
+			A2(
+			elm$url$Url$Parser$map,
+			author$project$Route$CreateTourney,
+			elm$url$Url$Parser$s('create'))
 		]));
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
@@ -6410,13 +6432,35 @@ var author$project$Main$init = F3(
 		var _n1 = author$project$Main$initPageModel(route);
 		var pageModel = _n1.a;
 		return _Utils_Tuple2(
-			A4(author$project$Main$Model, route, pageModel, 'Hello world', navKey),
+			A3(author$project$Main$Model, route, pageModel, navKey),
 			elm$core$Platform$Cmd$none);
 	});
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (model) {
 	return elm$core$Platform$Sub$none;
+};
+var author$project$Main$updateRoute = function (url) {
+	var route = author$project$Route$parseRoute(url);
+	switch (route.$) {
+		case 'Bracket':
+			var _n1 = author$project$Page$Bracket$init(_Utils_Tuple0);
+			var bracketModel = _n1.a;
+			var bracketCmd = _n1.b;
+			var command = A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, bracketCmd);
+			var model = author$project$Main$BracketModel(bracketModel);
+			return _Utils_Tuple3(route, model, command);
+		case 'CreateTourney':
+			var _n2 = author$project$Page$CreateTourney$init;
+			var createModel = _n2.a;
+			var createCmd = _n2.b;
+			return _Utils_Tuple3(
+				route,
+				author$project$Main$CreateTourneyModel(createModel),
+				A2(elm$core$Platform$Cmd$map, author$project$Main$CreateTourneyMsg, createCmd));
+		default:
+			return _Utils_Tuple3(author$project$Route$Home, author$project$Main$HomeModel, elm$core$Platform$Cmd$none);
+	}
 };
 var author$project$Page$Bracket$Failure = function (a) {
 	return {$: 'Failure', a: a};
@@ -6443,6 +6487,165 @@ var author$project$Page$Bracket$update = F2(
 							elm$core$Debug$toString(e))
 					}),
 				elm$core$Platform$Cmd$none);
+		}
+	});
+var author$project$Page$CreateTourney$CreatedTourney = function (a) {
+	return {$: 'CreatedTourney', a: a};
+};
+var author$project$Page$CreateTourney$Failure = function (a) {
+	return {$: 'Failure', a: a};
+};
+var author$project$Page$CreateTourney$Loading = {$: 'Loading'};
+var author$project$Page$CreateTourney$Success = {$: 'Success'};
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Page$CreateTourney$characterEncoder = function (name) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'name',
+				elm$json$Json$Encode$string(name))
+			]));
+};
+var elm$core$Dict$values = function (dict) {
+	return A3(
+		elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2(elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var elm$json$Json$Encode$int = _Json_wrap;
+var elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var author$project$Page$CreateTourney$tourneyEncoder = function (model) {
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'title',
+				elm$json$Json$Encode$string(model.title)),
+				_Utils_Tuple2(
+				'match_duration',
+				elm$json$Json$Encode$int(model.matchDuration)),
+				_Utils_Tuple2(
+				'characters',
+				A2(
+					elm$json$Json$Encode$list,
+					author$project$Page$CreateTourney$characterEncoder,
+					elm$core$Dict$values(model.characters)))
+			]));
+};
+var elm$core$Debug$log = _Debug_log;
+var elm$http$Http$expectString = function (toMsg) {
+	return A2(
+		elm$http$Http$expectStringResponse,
+		toMsg,
+		elm$http$Http$resolve(elm$core$Result$Ok));
+};
+var elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2(elm$json$Json$Encode$encode, 0, value));
+};
+var elm$http$Http$post = function (r) {
+	return elm$http$Http$request(
+		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: elm$core$Maybe$Nothing, tracker: elm$core$Maybe$Nothing, url: r.url});
+};
+var author$project$Page$CreateTourney$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'Hi':
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			case 'Title':
+				var title = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{title: title}),
+					elm$core$Platform$Cmd$none);
+			case 'MatchDuration':
+				var duration = msg.a;
+				var maybeDuration = elm$core$String$toInt(duration);
+				var parsedDuration = function () {
+					if (maybeDuration.$ === 'Nothing') {
+						return 0;
+					} else {
+						var x = maybeDuration.a;
+						return x;
+					}
+				}();
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{matchDuration: parsedDuration}),
+					elm$core$Platform$Cmd$none);
+			case 'Character':
+				var pos = msg.a;
+				var name = msg.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							characters: A3(elm$core$Dict$insert, pos, name, model.characters)
+						}),
+					elm$core$Platform$Cmd$none);
+			case 'Submit':
+				var body = author$project$Page$CreateTourney$tourneyEncoder(model);
+				var _n2 = A2(elm$core$Debug$log, 'submit', body);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{requestStatus: author$project$Page$CreateTourney$Loading}),
+					elm$http$Http$post(
+						{
+							body: elm$http$Http$jsonBody(
+								author$project$Page$CreateTourney$tourneyEncoder(model)),
+							expect: elm$http$Http$expectString(author$project$Page$CreateTourney$CreatedTourney),
+							url: 'https://tourney-service.herokuapp.com/tourney/tourney'
+						}));
+			default:
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{requestStatus: author$project$Page$CreateTourney$Success}),
+						elm$core$Platform$Cmd$none);
+				} else {
+					var e = result.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								requestStatus: author$project$Page$CreateTourney$Failure(
+									elm$core$Debug$toString(e))
+							}),
+						elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var elm$browser$Browser$External = function (a) {
@@ -6532,71 +6735,443 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 };
 var elm$browser$Browser$Navigation$load = _Browser_load;
 var elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
-var elm$core$Debug$log = _Debug_log;
 var author$project$Main$update = F2(
 	function (msg, model) {
-		var _n0 = A2(elm$core$Debug$log, 'update', model);
-		var _n1 = _Utils_Tuple2(msg, model.pageModel);
-		switch (_n1.a.$) {
-			case 'LinkClicked':
-				var urlRequest = _n1.a.a;
-				if (urlRequest.$ === 'Internal') {
-					var url = urlRequest.a;
-					return _Utils_Tuple2(
-						model,
-						A2(
-							elm$browser$Browser$Navigation$pushUrl,
-							model.key,
-							elm$url$Url$toString(url)));
-				} else {
-					var href = urlRequest.a;
-					return _Utils_Tuple2(
-						model,
-						elm$browser$Browser$Navigation$load(href));
-				}
-			case 'UrlChanged':
-				var url = _n1.a.a;
-				var route = author$project$Route$parseRoute(url);
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{route: route}),
-					elm$core$Platform$Cmd$none);
-			default:
-				if (_n1.b.$ === 'BracketModel') {
-					var bMsg = _n1.a.a;
-					var bModel = _n1.b.a;
-					var x = A2(elm$core$Debug$log, 'asd', 'dsadasdasd');
-					var _n3 = A2(author$project$Page$Bracket$update, bMsg, bModel);
-					var newModel = _n3.a;
-					var newCmd = _n3.b;
+		var _n0 = _Utils_Tuple2(msg, model.pageModel);
+		_n0$4:
+		while (true) {
+			switch (_n0.a.$) {
+				case 'LinkClicked':
+					var urlRequest = _n0.a.a;
+					if (urlRequest.$ === 'Internal') {
+						var url = urlRequest.a;
+						return _Utils_Tuple2(
+							model,
+							A2(
+								elm$browser$Browser$Navigation$pushUrl,
+								model.key,
+								elm$url$Url$toString(url)));
+					} else {
+						var href = urlRequest.a;
+						return _Utils_Tuple2(
+							model,
+							elm$browser$Browser$Navigation$load(href));
+					}
+				case 'UrlChanged':
+					var url = _n0.a.a;
+					var _n2 = author$project$Main$updateRoute(url);
+					var route = _n2.a;
+					var pageModel = _n2.b;
+					var cmd = _n2.c;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{
-								pageModel: author$project$Main$BracketModel(newModel)
-							}),
-						A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, newCmd));
-				} else {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				}
+							{pageModel: pageModel, route: route}),
+						cmd);
+				case 'BracketMsg':
+					if (_n0.b.$ === 'BracketModel') {
+						var bMsg = _n0.a.a;
+						var bModel = _n0.b.a;
+						var _n3 = A2(author$project$Page$Bracket$update, bMsg, bModel);
+						var newModel = _n3.a;
+						var newCmd = _n3.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									pageModel: author$project$Main$BracketModel(newModel)
+								}),
+							A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, newCmd));
+					} else {
+						break _n0$4;
+					}
+				default:
+					if (_n0.b.$ === 'CreateTourneyModel') {
+						var cMsg = _n0.a.a;
+						var cModel = _n0.b.a;
+						var _n4 = A2(author$project$Page$CreateTourney$update, cMsg, cModel);
+						var newModel = _n4.a;
+						var newCmd = _n4.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									pageModel: author$project$Main$CreateTourneyModel(newModel)
+								}),
+							A2(elm$core$Platform$Cmd$map, author$project$Main$CreateTourneyMsg, newCmd));
+					} else {
+						break _n0$4;
+					}
+			}
 		}
+		return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 	});
-var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
-var author$project$Main$renderARow = function (_n0) {
+var elm$svg$Svg$text = elm$virtual_dom$VirtualDom$text;
+var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var elm$svg$Svg$tspan = elm$svg$Svg$trustedNode('tspan');
+var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var author$project$Page$Bracket$render16Contestant = F2(
+	function (index, contestant) {
+		var yPos = ((index * 80) % (80 * 8)) + 120;
+		var xPos = (index < 8) ? 36 : 1410;
+		return A2(
+			elm$svg$Svg$tspan,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$x(
+					elm$core$String$fromInt(xPos)),
+					elm$svg$Svg$Attributes$y(
+					elm$core$String$fromInt(yPos))
+				]),
+			_List_fromArray(
+				[
+					elm$svg$Svg$text(contestant.name)
+				]));
+	});
+var author$project$Page$Bracket$render16 = function (contestants) {
+	if (contestants.$ === 'Nothing') {
+		return _List_Nil;
+	} else {
+		var val = contestants.a;
+		return A2(elm$core$List$indexedMap, author$project$Page$Bracket$render16Contestant, val);
+	}
+};
+var author$project$Page$Bracket$render8Contestant = F2(
+	function (index, contestant) {
+		var yPos = ((index * 160) % (160 * 4)) + 160;
+		var xPos = (index < 4) ? 210 : 1240;
+		return A2(
+			elm$svg$Svg$tspan,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$x(
+					elm$core$String$fromInt(xPos)),
+					elm$svg$Svg$Attributes$y(
+					elm$core$String$fromInt(yPos))
+				]),
+			_List_fromArray(
+				[
+					elm$svg$Svg$text(contestant.name)
+				]));
+	});
+var author$project$Page$Bracket$render8 = function (contestants) {
+	if (contestants.$ === 'Nothing') {
+		return _List_Nil;
+	} else {
+		var val = contestants.a;
+		return A2(elm$core$List$indexedMap, author$project$Page$Bracket$render8Contestant, val);
+	}
+};
+var elm$svg$Svg$line = elm$svg$Svg$trustedNode('line');
+var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var elm$svg$Svg$Attributes$strokeWidth = _VirtualDom_attribute('stroke-width');
+var elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
+var elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var author$project$Page$Bracket$horizontalLine = F2(
+	function (x, y) {
+		return A2(
+			elm$svg$Svg$line,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$x1(
+					elm$core$String$fromInt(x)),
+					elm$svg$Svg$Attributes$x2(
+					elm$core$String$fromInt(x + 170)),
+					elm$svg$Svg$Attributes$y1(
+					elm$core$String$fromInt(y)),
+					elm$svg$Svg$Attributes$y2(
+					elm$core$String$fromInt(y)),
+					elm$svg$Svg$Attributes$stroke('magenta'),
+					elm$svg$Svg$Attributes$strokeWidth('3'),
+					elm$svg$Svg$Attributes$fill('none')
+				]),
+			_List_Nil);
+	});
+var author$project$Page$Bracket$verticalLine = F3(
+	function (x, y, size) {
+		return A2(
+			elm$svg$Svg$line,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$x1(
+					elm$core$String$fromInt(x)),
+					elm$svg$Svg$Attributes$x2(
+					elm$core$String$fromInt(x)),
+					elm$svg$Svg$Attributes$y1(
+					elm$core$String$fromInt(y)),
+					elm$svg$Svg$Attributes$y2(
+					elm$core$String$fromInt(y + size)),
+					elm$svg$Svg$Attributes$stroke('magenta'),
+					elm$svg$Svg$Attributes$strokeWidth('3'),
+					elm$svg$Svg$Attributes$fill('none')
+				]),
+			_List_Nil);
+	});
+var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
+var author$project$Page$Bracket$renderBracket = A2(
+	elm$svg$Svg$g,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(author$project$Page$Bracket$horizontalLine, 30, 130),
+			A2(author$project$Page$Bracket$horizontalLine, 30, 210),
+			A2(author$project$Page$Bracket$horizontalLine, 30, 290),
+			A2(author$project$Page$Bracket$horizontalLine, 30, 370),
+			A2(author$project$Page$Bracket$horizontalLine, 30, 450),
+			A2(author$project$Page$Bracket$horizontalLine, 30, 530),
+			A2(author$project$Page$Bracket$horizontalLine, 30, 610),
+			A2(author$project$Page$Bracket$horizontalLine, 30, 690),
+			A2(author$project$Page$Bracket$horizontalLine, 200, 170),
+			A2(author$project$Page$Bracket$horizontalLine, 200, 330),
+			A2(author$project$Page$Bracket$horizontalLine, 200, 490),
+			A2(author$project$Page$Bracket$horizontalLine, 200, 650),
+			A2(author$project$Page$Bracket$horizontalLine, 370, 260),
+			A2(author$project$Page$Bracket$horizontalLine, 370, 570),
+			A2(author$project$Page$Bracket$horizontalLine, 540, 420),
+			A2(author$project$Page$Bracket$horizontalLine, 1400, 130),
+			A2(author$project$Page$Bracket$horizontalLine, 1400, 210),
+			A2(author$project$Page$Bracket$horizontalLine, 1400, 290),
+			A2(author$project$Page$Bracket$horizontalLine, 1400, 370),
+			A2(author$project$Page$Bracket$horizontalLine, 1400, 450),
+			A2(author$project$Page$Bracket$horizontalLine, 1400, 530),
+			A2(author$project$Page$Bracket$horizontalLine, 1400, 610),
+			A2(author$project$Page$Bracket$horizontalLine, 1400, 690),
+			A2(author$project$Page$Bracket$horizontalLine, 1230, 170),
+			A2(author$project$Page$Bracket$horizontalLine, 1230, 330),
+			A2(author$project$Page$Bracket$horizontalLine, 1230, 490),
+			A2(author$project$Page$Bracket$horizontalLine, 1230, 650),
+			A2(author$project$Page$Bracket$horizontalLine, 1060, 260),
+			A2(author$project$Page$Bracket$horizontalLine, 1060, 570),
+			A2(author$project$Page$Bracket$horizontalLine, 890, 420),
+			A2(author$project$Page$Bracket$horizontalLine, 715, 370),
+			A3(author$project$Page$Bracket$verticalLine, 200, 130, 80),
+			A3(author$project$Page$Bracket$verticalLine, 200, 290, 80),
+			A3(author$project$Page$Bracket$verticalLine, 200, 450, 80),
+			A3(author$project$Page$Bracket$verticalLine, 200, 610, 80),
+			A3(author$project$Page$Bracket$verticalLine, 370, 170, 160),
+			A3(author$project$Page$Bracket$verticalLine, 370, 490, 160),
+			A3(author$project$Page$Bracket$verticalLine, 540, 260, 310),
+			A3(author$project$Page$Bracket$verticalLine, 1400, 130, 80),
+			A3(author$project$Page$Bracket$verticalLine, 1400, 290, 80),
+			A3(author$project$Page$Bracket$verticalLine, 1400, 450, 80),
+			A3(author$project$Page$Bracket$verticalLine, 1400, 610, 80),
+			A3(author$project$Page$Bracket$verticalLine, 1230, 170, 160),
+			A3(author$project$Page$Bracket$verticalLine, 1230, 490, 160),
+			A3(author$project$Page$Bracket$verticalLine, 1060, 260, 310),
+			A3(author$project$Page$Bracket$verticalLine, 888, 370, 50),
+			A3(author$project$Page$Bracket$verticalLine, 712, 370, 50)
+		]));
+var author$project$Page$Bracket$renderFinalsContestant = F2(
+	function (index, contestant) {
+		var yPos = 410;
+		var xPos = (!index) ? 580 : 930;
+		return A2(
+			elm$svg$Svg$tspan,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$x(
+					elm$core$String$fromInt(xPos)),
+					elm$svg$Svg$Attributes$y(
+					elm$core$String$fromInt(yPos))
+				]),
+			_List_fromArray(
+				[
+					elm$svg$Svg$text(contestant.name)
+				]));
+	});
+var author$project$Page$Bracket$renderFinals = function (contestants) {
+	if (contestants.$ === 'Nothing') {
+		return _List_Nil;
+	} else {
+		var val = contestants.a;
+		return A2(elm$core$List$indexedMap, author$project$Page$Bracket$renderFinalsContestant, val);
+	}
+};
+var author$project$Page$Bracket$renderSemisContestant = F2(
+	function (index, contestant) {
+		var yPos = ((index * 310) % (310 * 2)) + 250;
+		var xPos = (index < 2) ? 380 : 1070;
+		return A2(
+			elm$svg$Svg$tspan,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$x(
+					elm$core$String$fromInt(xPos)),
+					elm$svg$Svg$Attributes$y(
+					elm$core$String$fromInt(yPos))
+				]),
+			_List_fromArray(
+				[
+					elm$svg$Svg$text(contestant.name)
+				]));
+	});
+var author$project$Page$Bracket$renderSemis = function (contestants) {
+	if (contestants.$ === 'Nothing') {
+		return _List_Nil;
+	} else {
+		var val = contestants.a;
+		return A2(elm$core$List$indexedMap, author$project$Page$Bracket$renderSemisContestant, val);
+	}
+};
+var author$project$Page$Bracket$renderWinner = function (contestant) {
+	var name = function () {
+		if (contestant.$ === 'Nothing') {
+			return '';
+		} else {
+			var c = contestant.a;
+			return c.name;
+		}
+	}();
 	return A2(
-		elm$html$Html$h2,
-		_List_Nil,
+		elm$svg$Svg$tspan,
 		_List_fromArray(
 			[
-				elm$html$Html$text('Hello world')
+				elm$svg$Svg$Attributes$x('760'),
+				elm$svg$Svg$Attributes$y('360')
+			]),
+		_List_fromArray(
+			[
+				elm$svg$Svg$text(name)
 			]));
 };
-var elm$html$Html$a = _VirtualDom_node('a');
-var elm$html$Html$li = _VirtualDom_node('li');
-var elm$json$Json$Encode$string = _Json_wrap;
+var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
+var elm$svg$Svg$text_ = elm$svg$Svg$trustedNode('text');
+var elm$svg$Svg$Attributes$fontSize = _VirtualDom_attribute('font-size');
+var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var elm$svg$Svg$Attributes$preserveAspectRatio = _VirtualDom_attribute('preserveAspectRatio');
+var elm$svg$Svg$Attributes$textAnchor = _VirtualDom_attribute('text-anchor');
+var elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var author$project$Page$Bracket$view = function (model) {
+	var headerText = function () {
+		var _n0 = model.status;
+		switch (_n0.$) {
+			case 'Loading':
+				return 'Loading...';
+			case 'Failure':
+				return 'Something went wrong!';
+			default:
+				return model.bracket.title;
+		}
+	}();
+	return A2(
+		elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				elm$svg$Svg$Attributes$width('100%'),
+				elm$svg$Svg$Attributes$height('100%'),
+				elm$svg$Svg$Attributes$viewBox('0 0 1600 800'),
+				elm$svg$Svg$Attributes$preserveAspectRatio('none')
+			]),
+		_List_fromArray(
+			[
+				author$project$Page$Bracket$renderBracket,
+				A2(
+				elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x('80'),
+						elm$svg$Svg$Attributes$y('80'),
+						elm$svg$Svg$Attributes$fontSize('16'),
+						elm$svg$Svg$Attributes$fill('white')
+					]),
+				author$project$Page$Bracket$render16(model.bracket.roundOf16)),
+				A2(
+				elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x('80'),
+						elm$svg$Svg$Attributes$y('80'),
+						elm$svg$Svg$Attributes$fontSize('16'),
+						elm$svg$Svg$Attributes$fill('white')
+					]),
+				author$project$Page$Bracket$render8(model.bracket.roundOf8)),
+				A2(
+				elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x('80'),
+						elm$svg$Svg$Attributes$y('80'),
+						elm$svg$Svg$Attributes$fontSize('16'),
+						elm$svg$Svg$Attributes$fill('white')
+					]),
+				author$project$Page$Bracket$renderSemis(model.bracket.semiFinals)),
+				A2(
+				elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x('80'),
+						elm$svg$Svg$Attributes$y('80'),
+						elm$svg$Svg$Attributes$fontSize('16'),
+						elm$svg$Svg$Attributes$fill('white')
+					]),
+				author$project$Page$Bracket$renderFinals(model.bracket.finals)),
+				A2(
+				elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x('80'),
+						elm$svg$Svg$Attributes$y('80'),
+						elm$svg$Svg$Attributes$fontSize('16'),
+						elm$svg$Svg$Attributes$fill('white')
+					]),
+				_List_fromArray(
+					[
+						author$project$Page$Bracket$renderWinner(model.bracket.winner)
+					])),
+				A2(
+				elm$svg$Svg$text_,
+				_List_fromArray(
+					[
+						elm$svg$Svg$Attributes$x('80'),
+						elm$svg$Svg$Attributes$y('80'),
+						elm$svg$Svg$Attributes$fontSize('42'),
+						elm$svg$Svg$Attributes$fill('white')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$svg$Svg$tspan,
+						_List_fromArray(
+							[
+								elm$svg$Svg$Attributes$x('50%'),
+								elm$svg$Svg$Attributes$y('110'),
+								elm$svg$Svg$Attributes$textAnchor('middle')
+							]),
+						_List_fromArray(
+							[
+								elm$svg$Svg$text(headerText)
+							]))
+					]))
+			]));
+};
+var author$project$Page$CreateTourney$MatchDuration = function (a) {
+	return {$: 'MatchDuration', a: a};
+};
+var author$project$Page$CreateTourney$Submit = {$: 'Submit'};
+var author$project$Page$CreateTourney$Title = function (a) {
+	return {$: 'Title', a: a};
+};
+var author$project$Page$CreateTourney$Character = F2(
+	function (a, b) {
+		return {$: 'Character', a: a, b: b};
+	});
+var author$project$Page$CreateTourney$getCharacter = F2(
+	function (pos, dict) {
+		var maybeChar = A2(elm$core$Dict$get, pos, dict);
+		if (maybeChar.$ === 'Nothing') {
+			return '';
+		} else {
+			var c = maybeChar.a;
+			return c;
+		}
+	});
+var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6604,13 +7179,181 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			key,
 			elm$json$Json$Encode$string(string));
 	});
+var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
+var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
+var elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+var elm$html$Html$Events$targetValue = A2(
+	elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	elm$json$Json$Decode$string);
+var elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			elm$json$Json$Decode$map,
+			elm$html$Html$Events$alwaysStop,
+			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
+};
+var author$project$Page$CreateTourney$characterInput = F2(
+	function (pos, characters) {
+		return A2(
+			elm$html$Html$input,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$type_('text'),
+					elm$html$Html$Attributes$placeholder('character'),
+					elm$html$Html$Attributes$value(
+					A2(author$project$Page$CreateTourney$getCharacter, pos, characters)),
+					elm$html$Html$Events$onInput(
+					author$project$Page$CreateTourney$Character(pos))
+				]),
+			_List_Nil);
+	});
+var elm$html$Html$p = _VirtualDom_node('p');
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var author$project$Page$CreateTourney$viewError = function (status) {
+	var msg = function () {
+		switch (status.$) {
+			case 'Loading':
+				return 'Sending...';
+			case 'Failure':
+				var e = status.a;
+				return 'Something went wrong: ' + e;
+			case 'Success':
+				return 'Stuff was created!';
+			default:
+				return '';
+		}
+	}();
+	return A2(
+		elm$html$Html$p,
+		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$text(msg)
+			]));
+};
+var elm$html$Html$button = _VirtualDom_node('button');
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
+var elm$html$Html$Attributes$step = function (n) {
+	return A2(elm$html$Html$Attributes$stringProperty, 'step', n);
+};
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
+var author$project$Page$CreateTourney$view = function (model) {
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('create-tourney')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Create page')
+					])),
+				A2(
+				elm$html$Html$input,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$type_('text'),
+						elm$html$Html$Attributes$placeholder('Title'),
+						elm$html$Html$Attributes$value(model.title),
+						elm$html$Html$Events$onInput(author$project$Page$CreateTourney$Title)
+					]),
+				_List_Nil),
+				A2(
+				elm$html$Html$input,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$type_('number'),
+						elm$html$Html$Attributes$step('1'),
+						elm$html$Html$Attributes$min('1'),
+						elm$html$Html$Attributes$placeholder('Match Duration'),
+						elm$html$Html$Attributes$value(
+						elm$core$Debug$toString(model.matchDuration)),
+						elm$html$Html$Events$onInput(author$project$Page$CreateTourney$MatchDuration)
+					]),
+				_List_Nil),
+				A2(author$project$Page$CreateTourney$characterInput, 1, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 2, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 3, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 4, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 5, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 6, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 7, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 8, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 9, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 10, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 11, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 12, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 13, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 14, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 15, model.characters),
+				A2(author$project$Page$CreateTourney$characterInput, 16, model.characters),
+				A2(
+				elm$html$Html$button,
+				_List_fromArray(
+					[
+						elm$html$Html$Events$onClick(author$project$Page$CreateTourney$Submit)
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('Create')
+					])),
+				author$project$Page$CreateTourney$viewError(model.requestStatus)
+			]));
+};
+var elm$html$Html$a = _VirtualDom_node('a');
+var elm$html$Html$li = _VirtualDom_node('li');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
 		'href',
 		_VirtualDom_noJavaScriptUri(url));
 };
-var author$project$Main$viewLink = function (path) {
+var author$project$Page$Home$viewLink = function (path) {
 	return A2(
 		elm$html$Html$li,
 		_List_Nil,
@@ -6628,29 +7371,47 @@ var author$project$Main$viewLink = function (path) {
 					]))
 			]));
 };
-var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h1 = _VirtualDom_node('h1');
+var author$project$Page$Home$view = A2(
+	elm$html$Html$div,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			elm$html$Html$h1,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Home Page')
+				])),
+			author$project$Page$Home$viewLink('#/bracket'),
+			author$project$Page$Home$viewLink('#/create')
+		]));
+var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
+var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
+var author$project$Main$pageContent = function (model) {
+	var _n0 = model.pageModel;
+	switch (_n0.$) {
+		case 'HomeModel':
+			return author$project$Page$Home$view;
+		case 'BracketModel':
+			var bracketModel = _n0.a;
+			return A2(
+				elm$html$Html$map,
+				author$project$Main$BracketMsg,
+				author$project$Page$Bracket$view(bracketModel));
+		default:
+			var createModel = _n0.a;
+			return A2(
+				elm$html$Html$map,
+				author$project$Main$CreateTourneyMsg,
+				author$project$Page$CreateTourney$view(createModel));
+	}
+};
 var author$project$Main$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
-				A2(
-				elm$html$Html$h1,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(
-						elm$core$Debug$toString(model.route))
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_Nil,
-				A2(
-					elm$core$List$map,
-					author$project$Main$renderARow,
-					_List_fromArray(
-						[1, 2, 3]))),
-				author$project$Main$viewLink('#/bracket')
+				author$project$Main$pageContent(model)
 			]),
 		title: 'Hi'
 	};
