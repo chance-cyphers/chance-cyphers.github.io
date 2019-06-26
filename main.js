@@ -4524,7 +4524,13 @@ var author$project$Main$CreateTourneyModel = function (a) {
 var author$project$Main$CreateTourneyMsg = function (a) {
 	return {$: 'CreateTourneyMsg', a: a};
 };
-var author$project$Main$HomeModel = {$: 'HomeModel'};
+var author$project$Main$HomeModel = function (a) {
+	return {$: 'HomeModel', a: a};
+};
+var author$project$Main$HomeMsg = function (a) {
+	return {$: 'HomeMsg', a: a};
+};
+var author$project$Main$NotFoundModel = {$: 'NotFoundModel'};
 var author$project$Page$Bracket$GotBracket = function (a) {
 	return {$: 'GotBracket', a: a};
 };
@@ -5953,29 +5959,58 @@ var author$project$Page$CreateTourney$NotEvenHappenedYetAtAll = {$: 'NotEvenHapp
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Page$CreateTourney$init = _Utils_Tuple2(
-	{characters: elm$core$Dict$empty, matchDuration: 0, requestStatus: author$project$Page$CreateTourney$NotEvenHappenedYetAtAll, title: ''},
+	{characters: elm$core$Dict$empty, matchDuration: 1, requestStatus: author$project$Page$CreateTourney$NotEvenHappenedYetAtAll, title: ''},
 	elm$core$Platform$Cmd$none);
+var author$project$Page$Home$GotLinks = function (a) {
+	return {$: 'GotLinks', a: a};
+};
+var author$project$Page$Home$Model = F2(
+	function (allTourneysLink, tourneys) {
+		return {allTourneysLink: allTourneysLink, tourneys: tourneys};
+	});
+var author$project$Page$Home$Links = function (allTourneys) {
+	return {allTourneys: allTourneys};
+};
+var author$project$Page$Home$linksDecoder = A2(
+	elm$json$Json$Decode$map,
+	author$project$Page$Home$Links,
+	A2(
+		elm$json$Json$Decode$field,
+		'links',
+		A2(elm$json$Json$Decode$field, 'allTourneysLink', elm$json$Json$Decode$string)));
+var author$project$Page$Home$init = _Utils_Tuple2(
+	A2(author$project$Page$Home$Model, elm$core$Maybe$Nothing, _List_Nil),
+	elm$http$Http$get(
+		{
+			expect: A2(elm$http$Http$expectJson, author$project$Page$Home$GotLinks, author$project$Page$Home$linksDecoder),
+			url: 'https://tourney-service.herokuapp.com/tourney'
+		}));
 var elm$core$Platform$Cmd$map = _Platform_map;
 var author$project$Main$initPageModel = function (route) {
 	switch (route.$) {
 		case 'Home':
-			return _Utils_Tuple2(author$project$Main$HomeModel, elm$core$Platform$Cmd$none);
+			var _n1 = author$project$Page$Home$init;
+			var homeModel = _n1.a;
+			var homeCmd = _n1.b;
+			return _Utils_Tuple2(
+				author$project$Main$HomeModel(homeModel),
+				A2(elm$core$Platform$Cmd$map, author$project$Main$HomeMsg, homeCmd));
 		case 'Bracket':
-			var _n1 = author$project$Page$Bracket$init(_Utils_Tuple0);
-			var bracketModel = _n1.a;
-			var bracketCmd = _n1.b;
+			var _n2 = author$project$Page$Bracket$init(_Utils_Tuple0);
+			var bracketModel = _n2.a;
+			var bracketCmd = _n2.b;
 			return _Utils_Tuple2(
 				author$project$Main$BracketModel(bracketModel),
 				A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, bracketCmd));
 		case 'CreateTourney':
-			var _n2 = author$project$Page$CreateTourney$init;
-			var createModel = _n2.a;
-			var createCmd = _n2.b;
+			var _n3 = author$project$Page$CreateTourney$init;
+			var createModel = _n3.a;
+			var createCmd = _n3.b;
 			return _Utils_Tuple2(
 				author$project$Main$CreateTourneyModel(createModel),
 				A2(elm$core$Platform$Cmd$map, author$project$Main$CreateTourneyMsg, createCmd));
 		default:
-			return _Utils_Tuple2(author$project$Main$HomeModel, elm$core$Platform$Cmd$none);
+			return _Utils_Tuple2(author$project$Main$NotFoundModel, elm$core$Platform$Cmd$none);
 	}
 };
 var author$project$Route$NotFound = {$: 'NotFound'};
@@ -6431,9 +6466,10 @@ var author$project$Main$init = F3(
 		var route = author$project$Route$parseRoute(url);
 		var _n1 = author$project$Main$initPageModel(route);
 		var pageModel = _n1.a;
+		var pageCmd = _n1.b;
 		return _Utils_Tuple2(
 			A3(author$project$Main$Model, route, pageModel, navKey),
-			elm$core$Platform$Cmd$none);
+			pageCmd);
 	});
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
@@ -6447,9 +6483,10 @@ var author$project$Main$updateRoute = function (url) {
 			var _n1 = author$project$Page$Bracket$init(_Utils_Tuple0);
 			var bracketModel = _n1.a;
 			var bracketCmd = _n1.b;
-			var command = A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, bracketCmd);
-			var model = author$project$Main$BracketModel(bracketModel);
-			return _Utils_Tuple3(route, model, command);
+			return _Utils_Tuple3(
+				route,
+				author$project$Main$BracketModel(bracketModel),
+				A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, bracketCmd));
 		case 'CreateTourney':
 			var _n2 = author$project$Page$CreateTourney$init;
 			var createModel = _n2.a;
@@ -6458,8 +6495,16 @@ var author$project$Main$updateRoute = function (url) {
 				route,
 				author$project$Main$CreateTourneyModel(createModel),
 				A2(elm$core$Platform$Cmd$map, author$project$Main$CreateTourneyMsg, createCmd));
+		case 'Home':
+			var _n3 = author$project$Page$Home$init;
+			var homeModel = _n3.a;
+			var homeCmd = _n3.b;
+			return _Utils_Tuple3(
+				author$project$Route$Home,
+				author$project$Main$HomeModel(homeModel),
+				A2(elm$core$Platform$Cmd$map, author$project$Main$HomeMsg, homeCmd));
 		default:
-			return _Utils_Tuple3(author$project$Route$Home, author$project$Main$HomeModel, elm$core$Platform$Cmd$none);
+			return _Utils_Tuple3(author$project$Route$NotFound, author$project$Main$NotFoundModel, elm$core$Platform$Cmd$none);
 	}
 };
 var author$project$Page$Bracket$Failure = function (a) {
@@ -6558,7 +6603,26 @@ var author$project$Page$CreateTourney$tourneyEncoder = function (model) {
 					elm$core$Dict$values(model.characters)))
 			]));
 };
-var elm$core$Debug$log = _Debug_log;
+var elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2(elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var elm$core$Dict$size = function (dict) {
+	return A2(elm$core$Dict$sizeHelp, 0, dict);
+};
 var elm$http$Http$expectString = function (toMsg) {
 	return A2(
 		elm$http$Http$expectStringResponse,
@@ -6589,12 +6653,12 @@ var author$project$Page$CreateTourney$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'MatchDuration':
 				var duration = msg.a;
-				var maybeDuration = elm$core$String$toInt(duration);
 				var parsedDuration = function () {
-					if (maybeDuration.$ === 'Nothing') {
+					var _n1 = elm$core$String$toInt(duration);
+					if (_n1.$ === 'Nothing') {
 						return 0;
 					} else {
-						var x = maybeDuration.a;
+						var x = _n1.a;
 						return x;
 					}
 				}();
@@ -6614,9 +6678,7 @@ var author$project$Page$CreateTourney$update = F2(
 						}),
 					elm$core$Platform$Cmd$none);
 			case 'Submit':
-				var body = author$project$Page$CreateTourney$tourneyEncoder(model);
-				var _n2 = A2(elm$core$Debug$log, 'submit', body);
-				return _Utils_Tuple2(
+				return (elm$core$Dict$size(model.characters) === 16) ? _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{requestStatus: author$project$Page$CreateTourney$Loading}),
@@ -6626,7 +6688,13 @@ var author$project$Page$CreateTourney$update = F2(
 								author$project$Page$CreateTourney$tourneyEncoder(model)),
 							expect: elm$http$Http$expectString(author$project$Page$CreateTourney$CreatedTourney),
 							url: 'https://tourney-service.herokuapp.com/tourney/tourney'
-						}));
+						})) : _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							requestStatus: author$project$Page$CreateTourney$Failure('Must have 16 character names')
+						}),
+					elm$core$Platform$Cmd$none);
 			default:
 				var result = msg.a;
 				if (result.$ === 'Ok') {
@@ -6646,6 +6714,56 @@ var author$project$Page$CreateTourney$update = F2(
 							}),
 						elm$core$Platform$Cmd$none);
 				}
+		}
+	});
+var author$project$Page$Home$GotTourneys = function (a) {
+	return {$: 'GotTourneys', a: a};
+};
+var author$project$Page$Home$Tourney = function (title) {
+	return {title: title};
+};
+var author$project$Page$Home$tourneyDecoder = A2(
+	elm$json$Json$Decode$map,
+	author$project$Page$Home$Tourney,
+	A2(elm$json$Json$Decode$field, 'title', elm$json$Json$Decode$string));
+var author$project$Page$Home$tourneysDecoder = elm$json$Json$Decode$list(author$project$Page$Home$tourneyDecoder);
+var author$project$Page$Home$fetchTourneysCmd = function (link) {
+	return elm$http$Http$get(
+		{
+			expect: A2(elm$http$Http$expectJson, author$project$Page$Home$GotTourneys, author$project$Page$Home$tourneysDecoder),
+			url: link
+		});
+};
+var elm$core$Debug$log = _Debug_log;
+var author$project$Page$Home$update = F2(
+	function (msg, model) {
+		if (msg.$ === 'GotLinks') {
+			var result = msg.a;
+			if (result.$ === 'Ok') {
+				var links = result.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							allTourneysLink: elm$core$Maybe$Just(links.allTourneys)
+						}),
+					author$project$Page$Home$fetchTourneysCmd(links.allTourneys));
+			} else {
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			}
+		} else {
+			var result = msg.a;
+			var _n2 = A2(elm$core$Debug$log, 'tourneys:', result);
+			if (result.$ === 'Ok') {
+				var tourneys = result.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{tourneys: tourneys}),
+					elm$core$Platform$Cmd$none);
+			} else {
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+			}
 		}
 	});
 var elm$browser$Browser$External = function (a) {
@@ -6738,7 +6856,7 @@ var elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var author$project$Main$update = F2(
 	function (msg, model) {
 		var _n0 = _Utils_Tuple2(msg, model.pageModel);
-		_n0$4:
+		_n0$5:
 		while (true) {
 			switch (_n0.a.$) {
 				case 'LinkClicked':
@@ -6783,9 +6901,9 @@ var author$project$Main$update = F2(
 								}),
 							A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, newCmd));
 					} else {
-						break _n0$4;
+						break _n0$5;
 					}
-				default:
+				case 'CreateTourneyMsg':
 					if (_n0.b.$ === 'CreateTourneyModel') {
 						var cMsg = _n0.a.a;
 						var cModel = _n0.b.a;
@@ -6800,7 +6918,24 @@ var author$project$Main$update = F2(
 								}),
 							A2(elm$core$Platform$Cmd$map, author$project$Main$CreateTourneyMsg, newCmd));
 					} else {
-						break _n0$4;
+						break _n0$5;
+					}
+				default:
+					if (_n0.b.$ === 'HomeModel') {
+						var hMsg = _n0.a.a;
+						var hModel = _n0.b.a;
+						var _n5 = A2(author$project$Page$Home$update, hMsg, hModel);
+						var newModel = _n5.a;
+						var newCmd = _n5.b;
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									pageModel: author$project$Main$HomeModel(newModel)
+								}),
+							A2(elm$core$Platform$Cmd$map, author$project$Main$HomeMsg, newCmd));
+					} else {
+						break _n0$5;
 					}
 			}
 		}
@@ -7346,7 +7481,6 @@ var author$project$Page$CreateTourney$view = function (model) {
 			]));
 };
 var elm$html$Html$a = _VirtualDom_node('a');
-var elm$html$Html$li = _VirtualDom_node('li');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
@@ -7355,7 +7489,7 @@ var elm$html$Html$Attributes$href = function (url) {
 };
 var author$project$Page$Home$viewLink = function (path) {
 	return A2(
-		elm$html$Html$li,
+		elm$html$Html$p,
 		_List_Nil,
 		_List_fromArray(
 			[
@@ -7371,40 +7505,67 @@ var author$project$Page$Home$viewLink = function (path) {
 					]))
 			]));
 };
-var author$project$Page$Home$view = A2(
-	elm$html$Html$div,
-	_List_Nil,
-	_List_fromArray(
-		[
-			A2(
-			elm$html$Html$h1,
-			_List_Nil,
-			_List_fromArray(
-				[
-					elm$html$Html$text('Home Page')
-				])),
-			author$project$Page$Home$viewLink('#/bracket'),
-			author$project$Page$Home$viewLink('#/create')
-		]));
+var elm$html$Html$li = _VirtualDom_node('li');
+var author$project$Page$Home$view = function (model) {
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Home Page')
+					])),
+				author$project$Page$Home$viewLink('#/bracket'),
+				author$project$Page$Home$viewLink('#/create'),
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				A2(
+					elm$core$List$map,
+					function (n) {
+						return A2(
+							elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									elm$html$Html$text(n.title)
+								]));
+					},
+					model.tourneys))
+			]));
+};
 var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var elm$html$Html$map = elm$virtual_dom$VirtualDom$map;
 var author$project$Main$pageContent = function (model) {
 	var _n0 = model.pageModel;
 	switch (_n0.$) {
 		case 'HomeModel':
-			return author$project$Page$Home$view;
+			var homeModel = _n0.a;
+			return author$project$Page$Home$view(homeModel);
 		case 'BracketModel':
 			var bracketModel = _n0.a;
 			return A2(
 				elm$html$Html$map,
 				author$project$Main$BracketMsg,
 				author$project$Page$Bracket$view(bracketModel));
-		default:
+		case 'CreateTourneyModel':
 			var createModel = _n0.a;
 			return A2(
 				elm$html$Html$map,
 				author$project$Main$CreateTourneyMsg,
 				author$project$Page$CreateTourney$view(createModel));
+		default:
+			return A2(
+				elm$html$Html$h1,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('404 Page Not Found')
+					]));
 	}
 };
 var author$project$Main$view = function (model) {
