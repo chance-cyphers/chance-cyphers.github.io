@@ -6092,6 +6092,7 @@ var author$project$Page$Tourney$init = function (tourneyLink) {
 		{tourney: elm$core$Maybe$Nothing, tourneyLink: tourneyLink},
 		author$project$Page$Tourney$fetchTourneyCmd(tourneyLink));
 };
+var author$project$Page$Vote$Loading = {$: 'Loading'};
 var author$project$Page$Vote$Model = F3(
 	function (currentMatchLink, match, username) {
 		return {currentMatchLink: currentMatchLink, match: match, username: username};
@@ -6127,7 +6128,7 @@ var author$project$Page$Vote$fetchMatchCmd = function (link) {
 };
 var author$project$Page$Vote$init = function (currentMatchLink) {
 	return _Utils_Tuple2(
-		A3(author$project$Page$Vote$Model, currentMatchLink, elm$core$Maybe$Nothing, ''),
+		A3(author$project$Page$Vote$Model, currentMatchLink, author$project$Page$Vote$Loading, ''),
 		author$project$Page$Vote$fetchMatchCmd(currentMatchLink));
 };
 var author$project$Route$Home = {$: 'Home'};
@@ -7326,6 +7327,10 @@ var author$project$Page$Tourney$update = F2(
 			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
+var author$project$Page$Vote$Expired = {$: 'Expired'};
+var author$project$Page$Vote$Success = function (a) {
+	return {$: 'Success', a: a};
+};
 var author$project$Page$Vote$VoteCompleted = function (a) {
 	return {$: 'VoteCompleted', a: a};
 };
@@ -7352,13 +7357,27 @@ var author$project$Page$Vote$update = F2(
 						_Utils_update(
 							model,
 							{
-								match: elm$core$Maybe$Just(match)
+								match: author$project$Page$Vote$Success(match)
 							}),
 						elm$core$Platform$Cmd$none);
 				} else {
 					var e = result.a;
-					var _n2 = A2(elm$core$Debug$log, 'error', e);
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					if (e.$ === 'BadStatus') {
+						var status = e.a;
+						if (status === 404) {
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{match: author$project$Page$Vote$Expired}),
+								elm$core$Platform$Cmd$none);
+						} else {
+							var _n3 = elm$core$Debug$log('error');
+							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						}
+					} else {
+						var _n4 = elm$core$Debug$log('error');
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					}
 				}
 			case 'VoteCompleted':
 				var result = msg.a;
@@ -7366,28 +7385,28 @@ var author$project$Page$Vote$update = F2(
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				} else {
 					var e = result.a;
-					var _n4 = A2(elm$core$Debug$log, 'error', e);
+					var _n7 = A2(elm$core$Debug$log, 'error', e);
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'Vote1':
-				var _n5 = model.match;
-				if (_n5.$ === 'Nothing') {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				} else {
-					var match = _n5.a;
+				var _n8 = model.match;
+				if (_n8.$ === 'Success') {
+					var match = _n8.a;
 					return _Utils_Tuple2(
 						model,
 						author$project$Page$Vote$voteCmd(match.character1.voteLink + ('?username=' + model.username)));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'Vote2':
-				var _n6 = model.match;
-				if (_n6.$ === 'Nothing') {
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				} else {
-					var match = _n6.a;
+				var _n9 = model.match;
+				if (_n9.$ === 'Success') {
+					var match = _n9.a;
 					return _Utils_Tuple2(
 						model,
 						author$project$Page$Vote$voteCmd(match.character2.voteLink + ('?username=' + model.username)));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			default:
 				var name = msg.a;
@@ -8296,65 +8315,74 @@ var author$project$Page$Vote$Vote1 = {$: 'Vote1'};
 var author$project$Page$Vote$Vote2 = {$: 'Vote2'};
 var author$project$Page$Vote$view = function (model) {
 	var _n0 = model.match;
-	if (_n0.$ === 'Nothing') {
-		return A2(
-			elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					elm$html$Html$text('loading...')
-				]));
-	} else {
-		var match = _n0.a;
-		return A2(
-			elm$html$Html$div,
-			_List_fromArray(
-				[
-					elm$html$Html$Attributes$class('vote-page')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$h1,
-					_List_Nil,
-					_List_fromArray(
-						[
-							elm$html$Html$text('Vote Page')
-						])),
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Events$onClick(author$project$Page$Vote$Vote1)
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text(match.character1.name)
-						])),
-					A2(
-					elm$html$Html$input,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$type_('text'),
-							elm$html$Html$Attributes$placeholder('username'),
-							elm$html$Html$Attributes$value(model.username),
-							elm$html$Html$Events$onInput(author$project$Page$Vote$Username)
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('VS')
-						])),
-					A2(
-					elm$html$Html$button,
-					_List_fromArray(
-						[
-							elm$html$Html$Events$onClick(author$project$Page$Vote$Vote2)
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text(match.character2.name)
-						]))
-				]));
+	switch (_n0.$) {
+		case 'Loading':
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Loading...')
+					]));
+		case 'Expired':
+			return A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Match is expired')
+					]));
+		default:
+			var match = _n0.a;
+			return A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('vote-page')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Vote Page')
+							])),
+						A2(
+						elm$html$Html$button,
+						_List_fromArray(
+							[
+								elm$html$Html$Events$onClick(author$project$Page$Vote$Vote1)
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(match.character1.name)
+							])),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$type_('text'),
+								elm$html$Html$Attributes$placeholder('username'),
+								elm$html$Html$Attributes$value(model.username),
+								elm$html$Html$Events$onInput(author$project$Page$Vote$Username)
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('VS')
+							])),
+						A2(
+						elm$html$Html$button,
+						_List_fromArray(
+							[
+								elm$html$Html$Events$onClick(author$project$Page$Vote$Vote2)
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(match.character2.name)
+							]))
+					]));
 	}
 };
 var elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
