@@ -7025,19 +7025,32 @@ var elm$time$Time$every = F2(
 var author$project$Page$Bracket$subscriptions = function (_n0) {
 	return A2(elm$time$Time$every, 3000, author$project$Page$Bracket$Tick);
 };
+var author$project$Page$Vote$Tick = function (a) {
+	return {$: 'Tick', a: a};
+};
+var author$project$Page$Vote$subscriptions = function (_n0) {
+	return A2(elm$time$Time$every, 10000, author$project$Page$Vote$Tick);
+};
 var elm$core$Platform$Sub$map = _Platform_map;
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (model) {
 	var _n0 = model.pageModel;
-	if (_n0.$ === 'BracketModel') {
-		var bracketModel = _n0.a;
-		return A2(
-			elm$core$Platform$Sub$map,
-			author$project$Main$BracketMsg,
-			author$project$Page$Bracket$subscriptions(bracketModel));
-	} else {
-		return elm$core$Platform$Sub$none;
+	switch (_n0.$) {
+		case 'BracketModel':
+			var bracketModel = _n0.a;
+			return A2(
+				elm$core$Platform$Sub$map,
+				author$project$Main$BracketMsg,
+				author$project$Page$Bracket$subscriptions(bracketModel));
+		case 'VoteModel':
+			var voteModel = _n0.a;
+			return A2(
+				elm$core$Platform$Sub$map,
+				author$project$Main$VoteMsg,
+				author$project$Page$Vote$subscriptions(voteModel));
+		default:
+			return elm$core$Platform$Sub$none;
 	}
 };
 var author$project$Page$Bracket$Failure = function (a) {
@@ -7408,13 +7421,17 @@ var author$project$Page$Vote$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
-			default:
+			case 'Username':
 				var name = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{username: name}),
 					elm$core$Platform$Cmd$none);
+			default:
+				return _Utils_Tuple2(
+					model,
+					author$project$Page$Vote$fetchMatchCmd(model.currentMatchLink));
 		}
 	});
 var elm$browser$Browser$External = function (a) {
