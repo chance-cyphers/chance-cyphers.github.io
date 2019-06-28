@@ -8347,7 +8347,7 @@ var author$project$Page$Vote$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text('Match is expired')
+						elm$html$Html$text('Voting has ended')
 					]));
 		default:
 			var match = _n0.a;
@@ -8360,17 +8360,11 @@ var author$project$Page$Vote$view = function (model) {
 				_List_fromArray(
 					[
 						A2(
-						elm$html$Html$h1,
-						_List_Nil,
+						elm$html$Html$div,
 						_List_fromArray(
 							[
-								elm$html$Html$text('Vote Page')
-							])),
-						A2(
-						elm$html$Html$button,
-						_List_fromArray(
-							[
-								elm$html$Html$Events$onClick(author$project$Page$Vote$Vote1)
+								elm$html$Html$Events$onClick(author$project$Page$Vote$Vote1),
+								elm$html$Html$Attributes$class('vote-top')
 							]),
 						_List_fromArray(
 							[
@@ -8385,15 +8379,13 @@ var author$project$Page$Vote$view = function (model) {
 								elm$html$Html$Attributes$value(model.username),
 								elm$html$Html$Events$onInput(author$project$Page$Vote$Username)
 							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('VS')
-							])),
+						_List_Nil),
 						A2(
-						elm$html$Html$button,
+						elm$html$Html$div,
 						_List_fromArray(
 							[
-								elm$html$Html$Events$onClick(author$project$Page$Vote$Vote2)
+								elm$html$Html$Events$onClick(author$project$Page$Vote$Vote2),
+								elm$html$Html$Attributes$class('vote-bottom')
 							]),
 						_List_fromArray(
 							[
