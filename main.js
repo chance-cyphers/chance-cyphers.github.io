@@ -4577,12 +4577,6 @@ var author$project$Main$HomeMsg = function (a) {
 	return {$: 'HomeMsg', a: a};
 };
 var author$project$Main$NotFoundModel = {$: 'NotFoundModel'};
-var author$project$Main$TourneyModel = function (a) {
-	return {$: 'TourneyModel', a: a};
-};
-var author$project$Main$TourneyMsg = function (a) {
-	return {$: 'TourneyMsg', a: a};
-};
 var author$project$Main$VoteModel = function (a) {
 	return {$: 'VoteModel', a: a};
 };
@@ -6047,51 +6041,6 @@ var author$project$Page$Home$init = _Utils_Tuple2(
 			expect: A2(elm$http$Http$expectJson, author$project$Page$Home$GotLinks, author$project$Page$Home$linksDecoder),
 			url: 'https://tourney-service.herokuapp.com/tourney'
 		}));
-var author$project$Page$Tourney$GotTourney = function (a) {
-	return {$: 'GotTourney', a: a};
-};
-var author$project$Page$Tourney$Tourney = F5(
-	function (title, matchDuration, characters, currentMatchLink, bracketLink) {
-		return {bracketLink: bracketLink, characters: characters, currentMatchLink: currentMatchLink, matchDuration: matchDuration, title: title};
-	});
-var author$project$Page$Tourney$Character = function (name) {
-	return {name: name};
-};
-var author$project$Page$Tourney$characterDecoder = A2(
-	elm$json$Json$Decode$map,
-	author$project$Page$Tourney$Character,
-	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string));
-var elm$json$Json$Decode$int = _Json_decodeInt;
-var elm$json$Json$Decode$map5 = _Json_map5;
-var author$project$Page$Tourney$tourneyDecoder = A6(
-	elm$json$Json$Decode$map5,
-	author$project$Page$Tourney$Tourney,
-	A2(elm$json$Json$Decode$field, 'title', elm$json$Json$Decode$string),
-	A2(elm$json$Json$Decode$field, 'match_duration', elm$json$Json$Decode$int),
-	A2(
-		elm$json$Json$Decode$field,
-		'characters',
-		elm$json$Json$Decode$list(author$project$Page$Tourney$characterDecoder)),
-	A2(
-		elm$json$Json$Decode$field,
-		'links',
-		A2(elm$json$Json$Decode$field, 'currentMatch', elm$json$Json$Decode$string)),
-	A2(
-		elm$json$Json$Decode$field,
-		'links',
-		A2(elm$json$Json$Decode$field, 'bracket', elm$json$Json$Decode$string)));
-var author$project$Page$Tourney$fetchTourneyCmd = function (link) {
-	return elm$http$Http$get(
-		{
-			expect: A2(elm$http$Http$expectJson, author$project$Page$Tourney$GotTourney, author$project$Page$Tourney$tourneyDecoder),
-			url: link
-		});
-};
-var author$project$Page$Tourney$init = function (tourneyLink) {
-	return _Utils_Tuple2(
-		{tourney: elm$core$Maybe$Nothing, tourneyLink: tourneyLink},
-		author$project$Page$Tourney$fetchTourneyCmd(tourneyLink));
-};
 var author$project$Page$Vote$Loading = {$: 'Loading'};
 var author$project$Page$Vote$Model = F3(
 	function (currentMatchLink, match, username) {
@@ -6133,9 +6082,6 @@ var author$project$Page$Vote$init = function (currentMatchLink) {
 };
 var author$project$Route$Home = {$: 'Home'};
 var author$project$Route$NotFound = {$: 'NotFound'};
-var author$project$Route$Tourney = function (a) {
-	return {$: 'Tourney', a: a};
-};
 var author$project$Route$Vote = function (a) {
 	return {$: 'Vote', a: a};
 };
@@ -6342,13 +6288,6 @@ var author$project$Route$parser = elm$url$Url$Parser$oneOf(
 			A2(
 				elm$url$Url$Parser$questionMark,
 				elm$url$Url$Parser$s('bracket'),
-				elm$url$Url$Parser$Query$string('link'))),
-			A2(
-			elm$url$Url$Parser$map,
-			author$project$Route$Tourney,
-			A2(
-				elm$url$Url$Parser$questionMark,
-				elm$url$Url$Parser$s('tourney'),
 				elm$url$Url$Parser$Query$string('link'))),
 			A2(
 			elm$url$Url$Parser$map,
@@ -6707,29 +6646,15 @@ var author$project$Main$updateRoute = function (url) {
 				author$project$Route$Home,
 				author$project$Main$HomeModel(homeModel),
 				A2(elm$core$Platform$Cmd$map, author$project$Main$HomeMsg, homeCmd));
-		case 'Tourney':
-			var maybeLink = _n0.a;
-			if (maybeLink.$ === 'Nothing') {
-				return _Utils_Tuple3(author$project$Route$NotFound, author$project$Main$NotFoundModel, elm$core$Platform$Cmd$none);
-			} else {
-				var link = maybeLink.a;
-				var _n6 = author$project$Page$Tourney$init(link);
-				var tourneyModel = _n6.a;
-				var tourneyCmd = _n6.b;
-				return _Utils_Tuple3(
-					author$project$Route$Tourney(maybeLink),
-					author$project$Main$TourneyModel(tourneyModel),
-					A2(elm$core$Platform$Cmd$map, author$project$Main$TourneyMsg, tourneyCmd));
-			}
 		case 'Vote':
 			var maybeLink = _n0.a;
 			if (maybeLink.$ === 'Nothing') {
 				return _Utils_Tuple3(author$project$Route$NotFound, author$project$Main$NotFoundModel, elm$core$Platform$Cmd$none);
 			} else {
 				var link = maybeLink.a;
-				var _n8 = author$project$Page$Vote$init(link);
-				var voteModel = _n8.a;
-				var voteCmd = _n8.b;
+				var _n6 = author$project$Page$Vote$init(link);
+				var voteModel = _n6.a;
+				var voteCmd = _n6.b;
 				return _Utils_Tuple3(
 					author$project$Route$Vote(maybeLink),
 					author$project$Main$VoteModel(voteModel),
@@ -7271,18 +7196,27 @@ var author$project$Page$CreateTourney$update = F2(
 var author$project$Page$Home$GotTourneys = function (a) {
 	return {$: 'GotTourneys', a: a};
 };
-var author$project$Page$Home$Tourney = F2(
-	function (title, selfLink) {
-		return {selfLink: selfLink, title: title};
+var author$project$Page$Home$Tourney = F4(
+	function (title, selfLink, bracketLink, matchLink) {
+		return {bracketLink: bracketLink, matchLink: matchLink, selfLink: selfLink, title: title};
 	});
-var author$project$Page$Home$tourneyDecoder = A3(
-	elm$json$Json$Decode$map2,
+var elm$json$Json$Decode$map4 = _Json_map4;
+var author$project$Page$Home$tourneyDecoder = A5(
+	elm$json$Json$Decode$map4,
 	author$project$Page$Home$Tourney,
 	A2(elm$json$Json$Decode$field, 'title', elm$json$Json$Decode$string),
 	A2(
 		elm$json$Json$Decode$field,
 		'links',
-		A2(elm$json$Json$Decode$field, 'self', elm$json$Json$Decode$string)));
+		A2(elm$json$Json$Decode$field, 'self', elm$json$Json$Decode$string)),
+	A2(
+		elm$json$Json$Decode$field,
+		'links',
+		A2(elm$json$Json$Decode$field, 'bracket', elm$json$Json$Decode$string)),
+	A2(
+		elm$json$Json$Decode$field,
+		'links',
+		A2(elm$json$Json$Decode$field, 'currentMatch', elm$json$Json$Decode$string)));
 var author$project$Page$Home$tourneysDecoder = elm$json$Json$Decode$list(author$project$Page$Home$tourneyDecoder);
 var author$project$Page$Home$fetchTourneysCmd = function (link) {
 	return elm$http$Http$get(
@@ -7321,25 +7255,6 @@ var author$project$Page$Home$update = F2(
 			}
 		}
 	});
-var elm$core$Debug$log = _Debug_log;
-var author$project$Page$Tourney$update = F2(
-	function (msg, model) {
-		var result = msg.a;
-		if (result.$ === 'Ok') {
-			var tourney = result.a;
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{
-						tourney: elm$core$Maybe$Just(tourney)
-					}),
-				elm$core$Platform$Cmd$none);
-		} else {
-			var e = result.a;
-			var _n2 = A2(elm$core$Debug$log, 'error fetching tourney', e);
-			return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-		}
-	});
 var author$project$Page$Vote$Expired = {$: 'Expired'};
 var author$project$Page$Vote$Success = function (a) {
 	return {$: 'Success', a: a};
@@ -7359,6 +7274,7 @@ var author$project$Page$Vote$voteCmd = function (link) {
 			url: link
 		});
 };
+var elm$core$Debug$log = _Debug_log;
 var author$project$Page$Vote$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -7523,7 +7439,7 @@ var elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
 var author$project$Main$update = F2(
 	function (msg, model) {
 		var _n0 = _Utils_Tuple2(msg, model.pageModel);
-		_n0$7:
+		_n0$6:
 		while (true) {
 			switch (_n0.a.$) {
 				case 'LinkClicked':
@@ -7568,7 +7484,7 @@ var author$project$Main$update = F2(
 								}),
 							A2(elm$core$Platform$Cmd$map, author$project$Main$BracketMsg, newCmd));
 					} else {
-						break _n0$7;
+						break _n0$6;
 					}
 				case 'CreateTourneyMsg':
 					if (_n0.b.$ === 'CreateTourneyModel') {
@@ -7585,7 +7501,7 @@ var author$project$Main$update = F2(
 								}),
 							A2(elm$core$Platform$Cmd$map, author$project$Main$CreateTourneyMsg, newCmd));
 					} else {
-						break _n0$7;
+						break _n0$6;
 					}
 				case 'HomeMsg':
 					if (_n0.b.$ === 'HomeModel') {
@@ -7602,32 +7518,15 @@ var author$project$Main$update = F2(
 								}),
 							A2(elm$core$Platform$Cmd$map, author$project$Main$HomeMsg, newCmd));
 					} else {
-						break _n0$7;
-					}
-				case 'TourneyMsg':
-					if (_n0.b.$ === 'TourneyModel') {
-						var tMsg = _n0.a.a;
-						var tModel = _n0.b.a;
-						var _n6 = A2(author$project$Page$Tourney$update, tMsg, tModel);
-						var newModel = _n6.a;
-						var newCmd = _n6.b;
-						return _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{
-									pageModel: author$project$Main$TourneyModel(newModel)
-								}),
-							A2(elm$core$Platform$Cmd$map, author$project$Main$TourneyMsg, newCmd));
-					} else {
-						break _n0$7;
+						break _n0$6;
 					}
 				default:
 					if (_n0.b.$ === 'VoteModel') {
 						var vMsg = _n0.a.a;
 						var vModel = _n0.b.a;
-						var _n7 = A2(author$project$Page$Vote$update, vMsg, vModel);
-						var newModel = _n7.a;
-						var newCmd = _n7.b;
+						var _n6 = A2(author$project$Page$Vote$update, vMsg, vModel);
+						var newModel = _n6.a;
+						var newCmd = _n6.b;
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
@@ -7636,11 +7535,11 @@ var author$project$Main$update = F2(
 								}),
 							A2(elm$core$Platform$Cmd$map, author$project$Main$VoteMsg, newCmd));
 					} else {
-						break _n0$7;
+						break _n0$6;
 					}
 			}
 		}
-		var _n8 = A2(elm$core$Debug$log, 'error', 'could not match msg/model');
+		var _n7 = A2(elm$core$Debug$log, 'error', 'could not match msg/model');
 		return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 	});
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -8178,27 +8077,47 @@ var author$project$Page$CreateTourney$view = function (model) {
 };
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$span = _VirtualDom_node('span');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
 		'href',
 		_VirtualDom_noJavaScriptUri(url));
 };
-var author$project$Page$Home$tourneyLink = function (tourney) {
+var author$project$Page$Home$tourneyItem = function (tourney) {
 	return A2(
 		elm$html$Html$li,
 		_List_Nil,
 		_List_fromArray(
 			[
 				A2(
-				elm$html$Html$a,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$href('#/tourney/?link=' + tourney.selfLink)
-					]),
+				elm$html$Html$span,
+				_List_Nil,
 				_List_fromArray(
 					[
 						elm$html$Html$text(tourney.title)
+					])),
+				A2(
+				elm$html$Html$a,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$href('#/bracket/?link=' + tourney.bracketLink),
+						elm$html$Html$Attributes$class('tourney-link')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('bracket')
+					])),
+				A2(
+				elm$html$Html$a,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$href('#/vote/?link=' + tourney.matchLink),
+						elm$html$Html$Attributes$class('tourney-link')
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('vote')
 					]))
 			]));
 };
@@ -8206,7 +8125,10 @@ var elm$html$Html$h3 = _VirtualDom_node('h3');
 var author$project$Page$Home$view = function (model) {
 	return A2(
 		elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('home-page')
+			]),
 		_List_fromArray(
 			[
 				A2(
@@ -8215,22 +8137,6 @@ var author$project$Page$Home$view = function (model) {
 				_List_fromArray(
 					[
 						elm$html$Html$text('Home Page')
-					])),
-				A2(
-				elm$html$Html$p,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$a,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$href('#/bracket?link=https://tourney-service.herokuapp.com/tourney/bracket/example')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('Example Bracket')
-							]))
 					])),
 				A2(
 				elm$html$Html$p,
@@ -8253,77 +8159,13 @@ var author$project$Page$Home$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text('Tourneys')
+						elm$html$Html$text('Tournaments')
 					])),
 				A2(
 				elm$html$Html$div,
 				_List_Nil,
-				A2(elm$core$List$map, author$project$Page$Home$tourneyLink, model.tourneys))
+				A2(elm$core$List$map, author$project$Page$Home$tourneyItem, model.tourneys))
 			]));
-};
-var elm$html$Html$br = _VirtualDom_node('br');
-var author$project$Page$Tourney$view = function (model) {
-	var _n0 = model.tourney;
-	if (_n0.$ === 'Nothing') {
-		return A2(
-			elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					elm$html$Html$text('loading...')
-				]));
-	} else {
-		var tourney = _n0.a;
-		return A2(
-			elm$html$Html$div,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$h1,
-					_List_Nil,
-					_List_fromArray(
-						[
-							elm$html$Html$text(tourney.title)
-						])),
-					A2(
-					elm$html$Html$div,
-					_List_Nil,
-					A2(
-						elm$core$List$map,
-						function (n) {
-							return A2(
-								elm$html$Html$p,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text(n.name)
-									]));
-						},
-						tourney.characters)),
-					A2(
-					elm$html$Html$a,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$href('#/vote?link=' + tourney.currentMatchLink)
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('Vote')
-						])),
-					A2(elm$html$Html$br, _List_Nil, _List_Nil),
-					A2(
-					elm$html$Html$a,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$href('#/bracket?link=' + tourney.bracketLink)
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('Bracket')
-						]))
-				]));
-	}
 };
 var author$project$Page$Vote$Username = function (a) {
 	return {$: 'Username', a: a};
@@ -8408,12 +8250,6 @@ var author$project$Main$pageContent = function (model) {
 				elm$html$Html$map,
 				author$project$Main$BracketMsg,
 				author$project$Page$Bracket$view(bracketModel));
-		case 'TourneyModel':
-			var tourneyModel = _n0.a;
-			return A2(
-				elm$html$Html$map,
-				author$project$Main$TourneyMsg,
-				author$project$Page$Tourney$view(tourneyModel));
 		case 'CreateTourneyModel':
 			var createModel = _n0.a;
 			return A2(
