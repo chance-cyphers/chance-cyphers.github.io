@@ -12,6 +12,13 @@ a:active {
     color: whitesmoke;
 }
 
+
+/*BRACKET PAGE*/
+
+.bracket-page .code-label {
+    fill: darkgrey;
+}
+
 .bracket-line {
     stroke: magenta;
 }
@@ -24,10 +31,43 @@ text {
 /*HOME PAGE*/
 
 .home-page {
+    text-align: center;
+}
+
+.home-page .title-bar {
+    height: 100px;
+    background-color: blueviolet;
+}
+
+.home-page .title-bar > h1 {
+    padding-top: 20px;
+}
+
+.home-page .home-content {
+    background-color: #660099;
     padding: 20px;
 }
 
-.home-page .tourney-link {
+.home-content .btn-primary {
+    background-color: magenta;
+    border-color: magenta;
+}
+
+.home-content .button-group {
+    margin-bottom: 16px;
+}
+
+.home-content .manage-link {
+    font-size: 12px;
+}
+
+/*MANAGE PAGE*/
+
+.manage-tourneys-page {
+    padding: 20px;
+}
+
+.manage-tourneys-page .tourney-link {
     margin: 0 0 0 15px;
 }
 
@@ -45,12 +85,9 @@ text {
     font-weight: bold;
 }
 
-.vote-page > input {
-    position: absolute;
-    left: 50%;
-    -webkit-transform: translateX(-50%);
-    transform: translateX(-50%);
-    top: 49vh;
+.vote-page .selected {
+    border-color: magenta;
+    border-style: solid;
 }
 
 .vote-page > .vote-bottom {
