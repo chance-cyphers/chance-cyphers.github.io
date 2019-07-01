@@ -8375,17 +8375,6 @@ var author$project$Page$ManageTourneys$tourneyItem = function (tourney) {
 				_List_fromArray(
 					[
 						elm$html$Html$text('bracket')
-					])),
-				A2(
-				elm$html$Html$a,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$href('#/vote/?link=' + (tourney.matchLink + ('&name=' + 'bob'))),
-						elm$html$Html$Attributes$class('tourney-link')
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text('vote')
 					]))
 			]));
 };
