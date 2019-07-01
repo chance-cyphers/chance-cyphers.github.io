@@ -6118,15 +6118,12 @@ var author$project$Page$Vote$fetchMatchCmd = function (code) {
 			url: 'https://tourney-service.herokuapp.com/tourney/tourney/current-match?code=' + code
 		});
 };
-var elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var elm$core$Debug$log = _Debug_log;
 var author$project$Page$Vote$init = F2(
 	function (code, name) {
 		var _n0 = A2(elm$core$Debug$log, 'name', name);
 		return _Utils_Tuple2(
-			{code: code, match: author$project$Page$Vote$Loading, name: name, selectedIndex: -1},
+			{code: code, match: author$project$Page$Vote$Loading, name: name, selectedName: ''},
 			author$project$Page$Vote$fetchMatchCmd(code));
 	});
 var author$project$Route$Home = {$: 'Home'};
@@ -7480,7 +7477,7 @@ var author$project$Page$Vote$update = F2(
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{selectedIndex: -1}),
+							{selectedName: ''}),
 						elm$core$Platform$Cmd$none);
 				}
 			case 'Vote1':
@@ -7490,7 +7487,7 @@ var author$project$Page$Vote$update = F2(
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{selectedIndex: 0}),
+							{selectedName: match.character1.name}),
 						author$project$Page$Vote$voteCmd(match.character1.voteLink + ('?username=' + model.name)));
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
@@ -7502,7 +7499,7 @@ var author$project$Page$Vote$update = F2(
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{selectedIndex: 1}),
+							{selectedName: match.character2.name}),
 						author$project$Page$Vote$voteCmd(match.character2.voteLink + ('?username=' + model.name)));
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
@@ -8461,7 +8458,7 @@ var author$project$Page$Vote$view = function (model) {
 							[
 								elm$html$Html$Events$onClick(author$project$Page$Vote$Vote1),
 								elm$html$Html$Attributes$class(
-								(!model.selectedIndex) ? 'vote-top selected' : 'vote-top')
+								_Utils_eq(match.character1.name, model.selectedName) ? 'vote-top selected' : 'vote-top')
 							]),
 						_List_fromArray(
 							[
@@ -8473,7 +8470,7 @@ var author$project$Page$Vote$view = function (model) {
 							[
 								elm$html$Html$Events$onClick(author$project$Page$Vote$Vote2),
 								elm$html$Html$Attributes$class(
-								(model.selectedIndex === 1) ? 'vote-bottom selected' : 'vote-bottom')
+								_Utils_eq(match.character2.name, model.selectedName) ? 'vote-bottom selected' : 'vote-bottom')
 							]),
 						_List_fromArray(
 							[
